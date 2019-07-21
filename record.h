@@ -98,9 +98,9 @@ namespace aeternum {
         template<std::size_t N, const field_name<TFieldTypes>& ...names>
         static std::size_t get_hash(const untyped_record& record) {
             return N > 0
-                   ? std::hash<typename std::tuple_element<std::greater<>{}(N, 1) ? N : 0, std::tuple<TFieldTypes...>>::type>{}(
-                            record.get(std::get<N>(std::forward_as_tuple(names...))))
-                     ^ (record_utils<TFieldTypes...>::get_hash<std::greater<>{}(N, 1) ? N : 0, names...>(record) << 1)
+                   ? std::hash<typename std::tuple_element<std::greater<>{}(N, 0) ? N : 0, std::tuple<TFieldTypes...>>::type>{}(
+                            record.get(std::get<std::greater<>{}(N, 0) ? N : 0>(std::forward_as_tuple(names...))))
+                     ^ (record_utils<TFieldTypes...>::get_hash<std::greater<>{}(N, 0) ? N - 1 : 0, names...>(record) << 1)
                    : std::hash<typename std::tuple_element<0, std::tuple<TFieldTypes...>>::type>{}(
                             record.get(std::get<0>(std::forward_as_tuple(names...))));
         }
@@ -108,9 +108,9 @@ namespace aeternum {
         template<std::size_t N, const field_name<TFieldTypes>& ...names>
         static std::size_t equal_to(const untyped_record& lhs, const untyped_record& rhs) {
             return N > 0
-                   ? std::equal_to<typename std::tuple_element<std::greater<>{}(N, 1) ? N : 0, std::tuple<TFieldTypes...>>::type>{}(
-                            lhs.get(std::get<N>(std::forward_as_tuple(names...))), rhs.get(std::get<N>(std::forward_as_tuple(names...))))
-                     && (record_utils<TFieldTypes...>::equal_to<std::greater<>{}(N, 1) ? N : 0, names...>(lhs, rhs) << 1)
+                   ? std::equal_to<typename std::tuple_element<std::greater<>{}(N, 0) ? N : 0, std::tuple<TFieldTypes...>>::type>{}(
+                            lhs.get(std::get<std::greater<>{}(N, 0) ? N : 0>(std::forward_as_tuple(names...))), rhs.get(std::get<N>(std::forward_as_tuple(names...))))
+                     && (record_utils<TFieldTypes...>::equal_to<std::greater<>{}(N, 0) ? N - 1 : 0, names...>(lhs, rhs) << 1)
                    : std::equal_to<typename std::tuple_element<0, std::tuple<TFieldTypes...>>::type>{}(
                             lhs.get(std::get<0>(std::forward_as_tuple(names...))), rhs.get(std::get<0>(std::forward_as_tuple(names...))));
         }

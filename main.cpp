@@ -2,6 +2,7 @@
 // Created by Anton Tcholakov on 2019-07-20.
 //
 
+#include <chrono>
 #include <cmath>
 #include <iostream>
 
@@ -75,6 +76,42 @@ namespace rectangle {
             ::record<tag, width_, height_>;
 }
 
+namespace music {
+    namespace song {
+        constexpr aeternum::atom tag("song");
+
+        const aeternum::field_name<std::string> name_("name");
+        const aeternum::field_name<std::string> artist_("artist");
+        const aeternum::field_name<uint16_t> duration_("duration");
+
+        using record =
+            aeternum::fields<std::string, std::string, uint16_t>
+                ::record<tag, name_, artist_, duration_>;
+    }
+
+    namespace lyrics {
+        constexpr aeternum::atom tag("lyrics");
+
+        struct line {
+            std::string text;
+            uint16_t timestamp;
+
+            bool operator==(const line& other) const { return text == other.text && timestamp == other.timestamp; }
+        };
+
+        const aeternum::field_name<immer::vector<line>> lines_("lines");
+        const aeternum::field_name<std::string> author_("author");
+
+        using record =
+            aeternum::fields<immer::vector<line>, std::string>
+                ::record<tag, lines_, author_>;
+    }
+
+    namespace metadata {
+        const aeternum::field_name<music::lyrics::record::tagged> lyrics_("lyrics");
+    }
+}
+
 namespace std {
     template<>
     struct hash<contact::record> {
@@ -112,6 +149,41 @@ namespace std {
     template<>
     struct hash<rectangle::record> {
         typedef rectangle::record argument_type;
+        typedef std::size_t result_type;
+
+        result_type operator()(const argument_type& record) const noexcept
+        {
+            return record.get_hash();
+        }
+    };
+
+    template<>
+    struct hash<music::song::record> {
+        typedef music::song::record argument_type;
+        typedef std::size_t result_type;
+
+        result_type operator()(const argument_type& record) const noexcept
+        {
+            return record.get_hash();
+        }
+    };
+
+    template<>
+    struct hash<music::lyrics::line> {
+        typedef music::lyrics::line argument_type;
+        typedef std::size_t result_type;
+
+        result_type operator()(const argument_type& line) const noexcept
+        {
+            std::size_t h1 = std::hash<std::string>{}(line.text);
+            std::size_t h2 = std::hash<uint16_t>{}(line.timestamp);
+            return h1 ^ (h2 << 1);
+        }
+    };
+
+    template<>
+    struct hash<music::lyrics::record> {
+        typedef music::lyrics::record argument_type;
         typedef std::size_t result_type;
 
         result_type operator()(const argument_type& record) const noexcept
@@ -203,6 +275,27 @@ int main()
     {
         std::cout << "Shapes contains a " << shape.get_tag().name
                   << " of area: " << area(shape) << std::endl;
+    }
+
+    std::cout << std::endl;
+
+    auto never_gonna = music::song::record::make(
+        "Never Gonna Give You Up",
+        "Rick Astley",
+        183);
+
+    never_gonna = never_gonna >> music::metadata::lyrics_.set(
+        music::lyrics::record::make(
+            immer::vector<music::lyrics::line> {
+                { "Never gonna give you up", 22 },
+                { "Never gonna let you down", 26 }
+            },
+            "rickroller89"));
+
+    std::cout << "\"Never gonna\" contains fields: ";
+    for (auto& kvp : never_gonna->raw_data())
+    {
+        std::cout << kvp.first.name << ", ";
     }
 
     return 0;
