@@ -3,7 +3,7 @@ project(aeternum)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(aeternum main.cpp atom.h crc32.h tagged.h)
+add_executable(aeternum main.cpp atom.h crc32.h tagged.h lens.h record.h collection_utils.h)
 
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)

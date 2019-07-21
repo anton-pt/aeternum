@@ -34,7 +34,7 @@ namespace aeternum {
 
         const atom get_tag() const { return _tag; }
 
-        operator bool() { return _data != nullptr; }
+        operator bool() const { return _data != nullptr; }
 
         std::size_t get_hash() const;
 
@@ -70,6 +70,14 @@ namespace aeternum {
 
         T& operator*() const;
         T* operator->() const;
+
+        template<typename U>
+        operator tagged<U>() const { return tagged<U>(_tag, std::static_pointer_cast<U>(_data)); }
+
+        template<typename Idx>
+        const typename Idx::result_type operator[](const Idx& idx) const {
+            return (*this)->operator[](idx);
+        }
     };
 
     template<const atom& tag, typename T>
@@ -100,7 +108,7 @@ namespace aeternum {
 
     template<typename T>
     tagged<T> make_tagged(atom tag, T&& data) {
-        return tagged<T>(tag, std::make_shared<T>(data));
+        return tagged<T>(tag, std::make_shared<T>(std::forward<T>(data)));
     }
 
     template<typename T, class Compare = std::less<T>>
