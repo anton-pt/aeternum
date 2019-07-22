@@ -180,7 +180,7 @@ namespace aeternum {
     }
 
     template<typename TRecord>
-    inline TRecord operator>>(const TRecord &record, const setter<tagged<untyped_record>> &setter) {
+    inline TRecord operator|(const TRecord &record, const setter<tagged<untyped_record>> &setter) {
         return TRecord(setter.apply(static_cast<const tagged<untyped_record> &>(record)));
     }
 

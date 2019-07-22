@@ -248,11 +248,15 @@ int main()
 
     std::cout << std::endl;
 
-    auto person_email_ = person::contact_ >> contact::email_;
 
     auto const john = person::record::make("John Smith", 42, contact::record::make("67890", "j.smith@email.com"));
-    auto const junior = john >> person::name_.set("Johnny Junior") >> person::age_.set(12);
-    auto const junior_new_email = junior >> person_email_.set("junior@email.com");
+    auto const junior = john
+            | person::name_.set("Johnny Junior")
+            | person::age_.set(12);
+
+    auto const person_email_ = person::contact_ >> contact::email_;
+    auto const junior_new_email = junior
+            | person_email_.set("junior@email.com");
 
     std::cout << john[person::name_]
               << ", age: " << +john[person::age_]
@@ -284,13 +288,14 @@ int main()
         "Rick Astley",
         183);
 
-    never_gonna = never_gonna >> music::metadata::lyrics_.set(
-        music::lyrics::record::make(
-            immer::vector<music::lyrics::line> {
-                { "Never gonna give you up", 22 },
-                { "Never gonna let you down", 26 }
-            },
-            "rickroller89"));
+    never_gonna = never_gonna
+            | music::metadata::lyrics_.set(
+                music::lyrics::record::make(
+                    immer::vector<music::lyrics::line> {
+                        { "Never gonna give you up", 22 },
+                        { "Never gonna let you down", 26 }
+                    },
+                    "rickroller89"));
 
     std::cout << "\"Never gonna\" contains fields: ";
     for (auto& kvp : never_gonna->raw_data())
